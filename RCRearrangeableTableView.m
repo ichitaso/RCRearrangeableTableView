@@ -27,11 +27,9 @@
 }
 
 - (void)cellWasHeld:(UILongPressGestureRecognizer *)longPressGesture {
-	if ([[longPressGesture view] isKindOfClass:[UITableViewCell class]]) {
-		UITableViewCell *cell = (UITableViewCell *)[longPressGesture view];
-		if (![rearrangeDelegate tableView:self canDragCell:cell])
-			return;
-	}
+	UITableViewCell *cell = (UITableViewCell *)[longPressGesture view];
+	if (![rearrangeDelegate tableView:self canDragCell:cell])
+		return;
 	if (!isRearranging) {
 		if (holdTimer) return;
 		holdTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(targetBeginLongPress:) userInfo:[longPressGesture view] repeats:NO];
@@ -133,10 +131,6 @@
 							[self reloadData];
 							break;
 						}
-					}
-					else {
-						
-						
 					}
 				}
 				isRearranging = NO;
