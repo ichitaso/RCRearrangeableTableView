@@ -80,8 +80,7 @@
 				CGRect bounds = [self rectForSection:idx.section];
 				CGFloat headerHeight = [self.delegate tableView:self heightForHeaderInSection:idx.section];
 				int _pfx = (2 + (int)shouldImmobilizeFirstCell);
-				CGRect realBounds = CGRectMake(0, bounds.origin.y + headerHeight + ((_pfx -1) * cell.frame.size.height), bounds.size.width, bounds.size.height - ((_pfx + 1) * headerHeight));
-				// offset bounding box by header size + cell height
+				CGRect realBounds = CGRectMake(0, bounds.origin.y + headerHeight + ((_pfx -1) * cell.frame.size.height), bounds.size.width, bounds.size.height - (headerHeight + ((_pfx) * cell.frame.size.height)));
 				// keep the moving cell inside of its section.
 				if (CGRectIntersectsRect(realBounds, frame))
 					[cell setFrame:frame];
@@ -115,7 +114,9 @@
 				}
 			}
 			[self setScrollEnabled:YES];
+			int count = 0;
 			for (UITableViewCell *aCell in [self visibleCells]) {
+				count++;
 				if (CGRectIntersectsRect(aCell.frame, cell.frame)) {
 					if (cell != aCell) {
 						CGFloat hheight = aCell.frame.size.height + aCell.frame.origin.y;
@@ -131,13 +132,22 @@
 						}];
 						[rearrangeDelegate tableView:self cellDidFinishDragging:cell];
 						CGRect bounds = [self rectForSection:idx.section];
-						CGFloat headerHeight = [self.delegate tableView:self heightForHeaderInSection:idx.section];
-						CGFloat offy = (cell.frame.origin.y - bounds.origin.y)/headerHeight;
+						CGFloat offy = (cell.frame.origin.y - bounds.origin.y)/cell.frame.size.height;
 						[rearrangeDelegate tableView:self movedCellFromIndex:idx toIndex:[NSIndexPath indexPathForRow:offy inSection:idx.section]];
 						[self reloadData];
-						break;
+						isRearranging = NO;
+						return;
 					}
 				}
+			}
+			CGRect boundingBox = [self rectForSection:idx.section];
+			if (cell.frame.origin.y + 44 >= (boundingBox.origin.y + boundingBox.size.height)) {
+				[UIView animateWithDuration:0.1 animations:^ {
+					[cell setFrame:CGRectMake(0, (boundingBox.origin.y + boundingBox.size.height) - cell.frame.size.height, cell.frame.size.width, cell.frame.size.height)];
+				}];
+				[rearrangeDelegate tableView:self cellDidFinishDragging:cell];
+				[rearrangeDelegate tableView:self movedCellFromIndex:idx toIndex:[NSIndexPath indexPathForRow:count inSection:idx.section]];
+				[self reloadData];
 			}
 			isRearranging = NO;
 			break;
